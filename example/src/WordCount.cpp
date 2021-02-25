@@ -4,6 +4,7 @@
 #include<stdlib.h>
 #include<cstring>
 #include<vector>
+#include<algorithm>
 #define MAX_NUM 1024
 
 using namespace std;
@@ -17,19 +18,19 @@ public:
 	}
 	
 
-private:
+
 	int occurCount;
 	string wordName;
 };
-class myFile
+class myfile
 {
 public:
-	myFile()
+	myfile()
 	{
 		this->fileName = "";
 		this->characterNum = this->wordNum = 0;
 	}
-	myFile(string s)
+	myfile(string s)
 	{
 		this->fileName = s;
 		this->characterNum = this->wordNum = 0;
@@ -44,9 +45,32 @@ private:
 	int wordNum;
 	vector<word> wVector;
 };
-
-
-int myFile::charCount(fstream &in)
+class findword
+{
+public:
+	findword(const string str)
+	{
+		this->wordToFind = str;
+	}
+	string GetWord()
+	{
+		return this->wordToFind;
+	}
+	bool operator()(word& nWord)
+	{
+		if (nWord.wordName == this->wordToFind)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+private:
+	string wordToFind;
+};
+int myfile::charCount(fstream &in)
 {
 	int totalCount=0;
 	char temp;
@@ -60,7 +84,7 @@ int myFile::charCount(fstream &in)
    cout<<"characters:"<<totalCount;
 	return totalCount;
 }
-int myFile::wordCount(fstream &in)
+int myfile::wordCount(fstream &in)
 {
 
 	if (!in.is_open())
@@ -80,7 +104,20 @@ int myFile::wordCount(fstream &in)
    while(!in.eof())
    {
    	in>>temp;
-   	wordString=wordString+temp;
+	if (temp <= 32 || temp>126)
+	{
+		for (int i = 0;i <= 4;i++)
+		{
+			if (!isalpha(wordString[i]))
+			{
+				wordString = "";
+				continue;
+			}
+
+		}
+		vector<word>::iterator it = find_if(this->wVector.begin(), this->wVector.end(), findword(wordString));
+	}
+	else	wordString=wordString+temp;
    }
    cout<<wordString;
    in.close(); 
@@ -94,7 +131,7 @@ int main()
 	string inputFileName = "";
 	string outputFileName = "";
 	cin >> inputFileName; 
-	myFile* mf =new myFile(inputFileName) ;
+	myfile* mf =new myfile(inputFileName) ;
 
 fstream in;
 in.open(inputFileName.c_str());
