@@ -1,4 +1,3 @@
-#define _CRT_SECURE_NO_WARNINGS
 #include<iostream>
 #include<fstream>
 #include<string>
@@ -35,9 +34,9 @@ public:
 		this->fileName = s;
 		this->characterNum = this->wordNum = 0;
 	}
-	int charCount(FILE *file);
-	int wordCount(FILE *file);
-	int mostWordCount(FILE *file);
+	int charCount(fstream& in);
+	int wordCount(fstream& in);
+//	int mostWordCount(FILE *file);
 	
 private:
 	string fileName;
@@ -47,34 +46,47 @@ private:
 };
 
 
-int myFile::charCount(FILE *file)
+int myFile::charCount(fstream &in)
 {
-	char buf[MAX_NUM];
-	int totalCount=0,len=0;
-	while (!feof(file)&&!ferror(file))
-	{
-		fgets(buf, MAX_NUM, file);
-		len = strlen(buf);
-		if (len == 0)
-		{
-			continue;
-		}
-		totalCount += len;
-	}
-	cout << "characters:" << totalCount << endl;
-	fclose(file);
+	int totalCount=0;
+	char temp;
+   in>>noskipws;
+   in>>temp;
+   while(!in.eof())
+   {
+   	totalCount++;
+   	in>>temp;
+   }
+   cout<<"characters:"<<totalCount;
 	return totalCount;
 }
-int myFile::wordCount(FILE *file)
+int myFile::wordCount(fstream &in)
 {
-	int totalCount = 0;
-	string tmp = "";
-	char c;
-	while (!feof(file)&&!ferror(file))
+
+	if (!in.is_open())
 	{
-
+		cout << "无法打开文件" << endl;
+		exit(0);
 	}
+	int totalCount = 0;
+	string wordString = "";
+	char temp;
+   in>>noskipws;
+   in>>temp;
+   if(in.eof())
+   {
+   	cout<<"文件到达末尾"<<endl;
+   }
+   while(!in.eof())
+   {
+   	in>>temp;
+   	wordString=wordString+temp;
+   }
+   cout<<wordString;
+   in.close(); 
+   in.clear();
 
+	return totalCount;
 }
 int main()
 {
@@ -82,12 +94,19 @@ int main()
 	string inputFileName = "";
 	string outputFileName = "";
 	cin >> inputFileName; 
-	FILE *in = fopen(inputFileName.c_str(),"r");
-	if (in == NULL)
+	myFile* mf =new myFile(inputFileName) ;
+
+fstream in;
+in.open(inputFileName.c_str());
+	if (!in.is_open())
 	{
 		cout << "无法打开文件" << endl;
 		exit(0);
 	}
-	charCount(in);
+	mf->charCount(in);
+	in.close();
+	in.clear();
+	in.open(inputFileName.c_str());
+	mf->wordCount(in);
 	
 }
