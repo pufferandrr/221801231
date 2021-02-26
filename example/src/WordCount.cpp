@@ -42,8 +42,9 @@ public:
 	int charCount(fstream& in);
 	int wordCount(fstream& in);
 	int lineCount(fstream& in);
+	/*bool sortWordTimes(const word&a, const word &b);*/
 	void wordOccurTimesCount(fstream& in);
-	bool sortWordTimes(const word&a,const word &b);
+	
 private:
 	string fileName;
 	int characterNum;
@@ -75,15 +76,7 @@ public:
 private:
 	string wordToFind;
 };
-void myfile::wordOccurTimesCount(fstream&in)
-{
-	if (this->wVector.size() <= 10)
-	{
-
-	}
-	
-}
-bool myfile::sortWordTimes(const word &a, const word &b)
+bool sortWordTimes(const word &a, const word &b)
 {
 	if (a.occurCount == b.occurCount)
 	{
@@ -95,6 +88,29 @@ bool myfile::sortWordTimes(const word &a, const word &b)
 	}
 
 }
+void myfile::wordOccurTimesCount(fstream&in)
+{
+	sort(this->wVector.begin(), this->wVector.end(),sortWordTimes);
+	vector<word>::iterator it = this->wVector.begin();
+	if (this->wVector.size() <= 10)
+	{
+		for (int i = 0;i < this->wVector.size();i++)
+		{
+			cout << it->wordName << ":"<<it->occurCount << endl;
+			++it;
+		}
+	}
+	else
+	{
+		for (int i = 0;i < 10;i++)
+		{
+			cout << it->wordName << ":" << it->occurCount << endl;
+			++it;
+		}
+	}
+	
+}
+
 int myfile::charCount(fstream &in)
 {
 	int totalCount=0;
@@ -106,7 +122,7 @@ int myfile::charCount(fstream &in)
    	totalCount++;
    	in>>temp;
    }
-   cout<<"characters:"<<totalCount;
+   cout<<"characters:"<<totalCount<<endl;
 	return totalCount;
 }
 int myfile::wordCount(fstream &in)
@@ -257,5 +273,8 @@ in.open("C:/Users/puffer/Desktop/learngit/221801231/example/src/test.txt");
 	in.clear();
 	in.open("C:/Users/puffer/Desktop/learngit/221801231/example/src/test.txt");
 	mf->lineCount(in);
-
+	in.close();
+	in.clear();
+	in.open("C:/Users/puffer/Desktop/learngit/221801231/example/src/test.txt");
+	mf->wordOccurTimesCount(in);
 }
