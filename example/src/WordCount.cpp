@@ -39,11 +39,11 @@ public:
 		this->fileName = s;
 		this->characterNum = this->wordNum = 0;
 	}
-	int charCount(fstream& in);
-	int wordCount(fstream& in);
-	int lineCount(fstream& in);
+	int charCount(fstream& in,string outputFileName);
+	int wordCount(fstream& in, string outputFileName);
+	int lineCount(fstream& in, string outputFileName);
 	/*bool sortWordTimes(const word&a, const word &b);*/
-	void wordOccurTimesCount(fstream& in);
+	void wordOccurTimesCount(fstream& in,string outputFileName);
 	
 private:
 	string fileName;
@@ -88,15 +88,17 @@ bool sortWordTimes(const word &a, const word &b)
 	}
 
 }
-void myfile::wordOccurTimesCount(fstream&in)
+void myfile::wordOccurTimesCount(fstream&in, string outputFileName)
 {
+	fstream out;
+	out.open(outputFileName.c_str(),ios::app);
 	sort(this->wVector.begin(), this->wVector.end(),sortWordTimes);
 	vector<word>::iterator it = this->wVector.begin();
 	if (this->wVector.size() <= 10)
 	{
 		for (int i = 0;i < this->wVector.size();i++)
 		{
-			cout << it->wordName << ":"<<it->occurCount << endl;
+			out << it->wordName << ":"<<it->occurCount << '\n';
 			++it;
 		}
 	}
@@ -104,15 +106,18 @@ void myfile::wordOccurTimesCount(fstream&in)
 	{
 		for (int i = 0;i < 10;i++)
 		{
-			cout << it->wordName << ":" << it->occurCount << endl;
+			out << it->wordName << ":" << it->occurCount <<'\n';
 			++it;
 		}
 	}
-	
+	out.close();
+	out.clear();
 }
 
-int myfile::charCount(fstream &in)
+int myfile::charCount(fstream &in, string outputFileName)
 {
+	fstream out;
+	out.open(outputFileName.c_str(),ios::app);
 	int totalCount=0;
 	char temp;
    in>>noskipws;
@@ -122,11 +127,16 @@ int myfile::charCount(fstream &in)
    	totalCount++;
    	in>>temp;
    }
-   cout<<"characters:"<<totalCount<<endl;
+   out<<"characters:"<<totalCount<<'\n';
+   out.close();
+   out.clear();
 	return totalCount;
 }
-int myfile::wordCount(fstream &in)
+int myfile::wordCount(fstream &in, string outputFileName)
 {
+	bool isWord = true;
+	fstream out;
+	out.open(outputFileName.c_str(),ios::app);
 	in.unsetf(ios_base::skipws);
 	if (!in.is_open())
 	{
@@ -145,6 +155,10 @@ int myfile::wordCount(fstream &in)
    {
 
    	in>>temp;
+	if (temp <= 'Z'&&temp >= 'A')
+	{
+		temp += 32;
+	}
 	if (temp <= 32 || temp>126||temp=='\n')
 	{
 		if (wordString.length() < 4)
@@ -157,20 +171,18 @@ int myfile::wordCount(fstream &in)
 			if (!isalpha(wordString[i]))
 			{
 				wordString = "";
-				continue;
+				isWord = false;
+				break;
 			}
 
 		}
-		for (int j = 0;j < wordString.length();j++)
+		if (!isWord)
 		{
-
-			if (wordString[j] <= 'Z'&&wordString[j] >= 'A')
-			{
-				wordString[j] += 32;
-			}
+			isWord = true;
+			continue;
 		}
+
 		totalCount++;
-		 cout<<wordString;
 		vector<word>::iterator it = find_if(this->wVector.begin(), this->wVector.end(), findword(wordString));
 		if (it != this->wVector.end())
 		{
@@ -179,8 +191,9 @@ int myfile::wordCount(fstream &in)
 		else
 		{
 			this->wVector.push_back(word(wordString));
-			wordString = "";
+			
 		}
+		wordString = "";
 	}
 	else	wordString=wordString+temp;
    }
@@ -196,38 +209,51 @@ int myfile::wordCount(fstream &in)
 		   if (!isalpha(wordString[i]))
 		   {
 			   wordString = "";
+			   isWord = false;
 			   break;
 		   }
 
 	   }
-	   for (int j = 0;j < wordString.length();j++)
+	   if (isWord)
 	   {
-
-		   if (wordString[j] <= 'Z'&&wordString[j] >= 'A')
+		   for (int j = 0;j < wordString.length();j++)
 		   {
-			   wordString[j] += 32;
+
+			   if (wordString[j] <= 'Z'&&wordString[j] >= 'A')
+			   {
+				   wordString[j] += 32;
+			   }
 		   }
-	   }
-	   totalCount++;
-	   cout << wordString;
-	   vector<word>::iterator it = find_if(this->wVector.begin(), this->wVector.end(), findword(wordString));
-	   if (it != this->wVector.end())
-	   {
-		   it->occurCount++;
+		   totalCount++;
+		   vector<word>::iterator it = find_if(this->wVector.begin(), this->wVector.end(), findword(wordString));
+		   if (it != this->wVector.end())
+		   {
+			   it->occurCount++;
+
+		   }
+		   else
+		   {
+			   this->wVector.push_back(word(wordString));
+
+		   }
+		   wordString = "";
 	   }
 	   else
 	   {
-		   this->wVector.push_back(word(wordString));
-		   wordString = "";
+		   isWord = true;
 	   }
    }
    in.close(); 
    in.clear();
-   cout << "word:" << totalCount << endl;
+   out << "word:" << totalCount << endl;
+   out.close();
+   out.clear();
 	return totalCount;
 }
-int myfile::lineCount(fstream &in)
+int myfile::lineCount(fstream &in, string outputFileName)
 {
+	fstream out;
+	out.open(outputFileName.c_str(),ios::app);
 	if (!in.is_open())
 	{
 		cout << "无法打开文件" << endl;
@@ -247,34 +273,44 @@ int myfile::lineCount(fstream &in)
 			}
 		}
 	}
-	cout << "line:" << totalCount << endl;
+	out << "line:" << totalCount << endl;
+	out.close();
+	out.clear();
+	return totalCount;
 }
-int main()
+int main(int argc, char *argv[])
 {
 	
 	string inputFileName = "";
 	string outputFileName = "";
-	cin >> inputFileName; 
+	cin >> inputFileName>>outputFileName; 
 	myfile* mf =new myfile(inputFileName) ;
 
 fstream in;
-in.open("C:/Users/puffer/Desktop/learngit/221801231/example/src/test.txt");
+fstream out;
+in.open("C:/Users/puffer/Desktop/learngit/221801231/example/src/input.txt");
+out.open("C:/Users/puffer/Desktop/learngit/221801231/example/src/output.txt",ios::out);
+out.close();
+out.clear();
+
 	if (!in.is_open())
 	{
 		cout << "无法打开文件" << endl;
 		exit(0);
 	}
-	mf->charCount(in);
+	mf->charCount(in, "C:/Users/puffer/Desktop/learngit/221801231/example/src/output.txt");
 	in.close();
 	in.clear();
-	in.open("C:/Users/puffer/Desktop/learngit/221801231/example/src/test.txt");
-	mf->wordCount(in);
+	in.open("C:/Users/puffer/Desktop/learngit/221801231/example/src/input.txt");
+	mf->wordCount(in, "C:/Users/puffer/Desktop/learngit/221801231/example/src/output.txt");
 	in.close();
 	in.clear();
-	in.open("C:/Users/puffer/Desktop/learngit/221801231/example/src/test.txt");
-	mf->lineCount(in);
+	in.open("C:/Users/puffer/Desktop/learngit/221801231/example/src/input.txt");
+	mf->lineCount(in, "C:/Users/puffer/Desktop/learngit/221801231/example/src/output.txt");
 	in.close();
 	in.clear();
-	in.open("C:/Users/puffer/Desktop/learngit/221801231/example/src/test.txt");
-	mf->wordOccurTimesCount(in);
+	in.open("C:/Users/puffer/Desktop/learngit/221801231/example/src/input.txt");
+	mf->wordOccurTimesCount(in, "C:/Users/puffer/Desktop/learngit/221801231/example/src/output.txt");
+	in.close();
+	in.clear();
 }
